@@ -164,7 +164,7 @@ internal static class HarmonyUtility
         }
     }
 
-    private static bool HasActivePatches(Patches patches)
+    private static bool HasActivePatches(HarmonyLib.Patches patches)
     {
         return patches != null &&
                ((patches.Prefixes != null && patches.Prefixes.Count != 0) ||

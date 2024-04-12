@@ -15,6 +15,7 @@ public static class LogPublisherEntrypoint
 
     internal static LogContext Logger => LunarAPI.LogContext;
 
+    internal static PatchGroup MainPatchGroup;
     internal static PatchGroup CompatPatchGroup;
 
     internal static bool IsStandaloneMod { get; private set; }
@@ -30,6 +31,10 @@ public static class LogPublisherEntrypoint
 
         ModCompat.ApplyAll(LunarAPI, CompatPatchGroup);
 
+        MainPatchGroup ??= LunarAPI.RootPatchGroup.NewSubGroup("Main");
+        MainPatchGroup.AddPatches(typeof(LogPublisherEntrypoint).Assembly);
+        MainPatchGroup.Subscribe();
+
         if (LogPublisher.Instance != null && IsStandaloneMod && !ModCompat_HugsLib.IsPresent)
         {
             LunarAPI.LifecycleHooks.DoOnGUI(OnGUI);
@@ -38,6 +43,7 @@ public static class LogPublisherEntrypoint
 
     private static void Cleanup()
     {
+        MainPatchGroup?.UnsubscribeAll();
         CompatPatchGroup?.UnsubscribeAll();
     }
 

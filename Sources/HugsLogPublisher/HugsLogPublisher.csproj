@@ -79,6 +79,7 @@
         <Compile Include="LogPublisher.cs" />
         <Compile Include="LogPublisherEntrypoint.cs" />
         <Compile Include="LogPublisherOptions.cs" />
+        <Compile Include="Patches\Patch_LudeonTK_EditWindow_Log.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

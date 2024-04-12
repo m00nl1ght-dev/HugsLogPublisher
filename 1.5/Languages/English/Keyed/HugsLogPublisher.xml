@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
   <HugsLogPublisher.copy>Copy</HugsLogPublisher.copy>
-  <HugsLogPublisher.shareBtn>Share logs</HugsLogPublisher.shareBtn>
+  <HugsLogPublisher.shareBtn>Share log</HugsLogPublisher.shareBtn>
+  <HugsLogPublisher.shareBtnDescr>Upload log file and get a link that you can share with others</HugsLogPublisher.shareBtnDescr>
   <HugsLogPublisher.shareConfirmTitle>Confirm</HugsLogPublisher.shareConfirmTitle>
   <HugsLogPublisher.shareConfirmMessage>Upload game logs now?\n\nThis will post your game logs to a public server and give you the link to share with others. This is useful if you need help fixing a problem or would like to report an issue to a mod author.\n\nNo private information will be shared.</HugsLogPublisher.shareConfirmMessage>
   <HugsLogPublisher.publisherTitle>Log publisher</HugsLogPublisher.publisherTitle>
