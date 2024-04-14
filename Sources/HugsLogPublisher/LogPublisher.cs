@@ -273,7 +273,7 @@ public class LogPublisher
         log = Regex.Replace(log, "<RI> Initializing input\\.\r\n", "");
         log = Regex.Replace(log, "<RI> Input initialized\\.\r\n", "");
         log = Regex.Replace(log, "<RI> Initialized touch support\\.\r\n", "");
-        log = Regex.Replace(log, "\\(Filename: C:/buildslave.+\n", "");
+        log = Regex.Replace(log, "\\(Filename: .+Line: .+\\)\n", "");
         log = Regex.Replace(log, "\n \n", "\n");
         return log;
     }
@@ -493,84 +493,92 @@ public class LogPublisher
     {
         const int searchRange = 40;
         const int minRepetitions = 2;
-        const int minLength = 20;
+        const int minLength = 25;
 
-        var lines = log.Split('\n');
-
-        var result = new StringBuilder();
-
-        for (int i = 0; i < lines.Length; i++)
+        try
         {
-            var line = lines[i];
+            var lines = log.Split('\n');
 
-            result.Append(line).Append('\n');
+            var result = new StringBuilder();
 
-            for (int o = 1; o < searchRange && i + 2 * o <= lines.Length; o++)
+            for (int i = 0; i < lines.Length; i++)
             {
-                bool match;
+                var line = lines[i];
 
-                int r = 0;
-                int j = i;
+                result.Append(line).Append('\n');
 
-                do
+                for (int o = 1; o < searchRange && i + 2 * o <= lines.Length; o++)
                 {
-                    match = lines[j] == lines[j + o];
+                    bool match;
 
-                    if (match)
+                    int r = 0;
+                    int j = i;
+
+                    do
                     {
-                        for (int k = 1; k < o; k++)
-                        {
-                            if (lines[j + k] != lines[j + o + k])
-                            {
-                                match = false;
-                                break;
-                            }
-                        }
+                        match = lines[j] == lines[j + o];
 
                         if (match)
                         {
-                            j += o;
-                            r++;
+                            for (int k = 1; k < o; k++)
+                            {
+                                if (lines[j + k] != lines[j + o + k])
+                                {
+                                    match = false;
+                                    break;
+                                }
+                            }
+
+                            if (match)
+                            {
+                                j += o;
+                                r++;
+                            }
                         }
                     }
-                }
-                while (match && j + 2 * o <= lines.Length);
+                    while (match && j + 2 * o <= lines.Length);
 
-                if (r >= minRepetitions && (r + 1) * o >= minLength)
-                {
-                    for (int k = 1; k < o - 1; k++)
+                    if (r >= minRepetitions && (r + 1) * o >= minLength)
                     {
-                        result.Append(lines[i + k]).Append('\n');
+                        for (int k = 1; k < o - 1; k++)
+                        {
+                            result.Append(lines[i + k]).Append('\n');
+                        }
+
+                        var n = lines[i].Length == 0 ? o - 1 : o;
+
+                        if (lines[i + o - 1].Length != 0)
+                        {
+                            result.Append(lines[i + o - 1]).Append('\n');
+                        }
+                        else
+                        {
+                            n--;
+                        }
+
+                        if (n == 1)
+                            result.Append($"########## The preceding line was repeated {r} times ##########").Append('\n');
+                        else if (n > 1)
+                            result.Append($"########## The preceding {n} lines were repeated {r} times ##########").Append('\n');
+
+                        i += o * r + (o - 1);
+
+                        if (n >= 1 && i + 1 < lines.Length && lines[i + 1].Length != 0)
+                        {
+                            result.Append('\n');
+                        }
+
+                        break;
                     }
-
-                    var n = lines[i].Length == 0 ? o - 1 : o;
-
-                    if (lines[i + o - 1].Length != 0)
-                    {
-                        result.Append(lines[i + o - 1]).Append('\n');
-                    }
-                    else
-                    {
-                        n--;
-                    }
-
-                    if (n == 1)
-                        result.Append($"########## The preceding line was repeated {r} times ##########").Append('\n');
-                    else if (n > 1)
-                        result.Append($"########## The preceding {n} lines were repeated {r} times ##########").Append('\n');
-
-                    i += o * r + (o - 1);
-
-                    if (n >= 1 && i + 1 < lines.Length && lines[i + 1].Length != 0)
-                    {
-                        result.Append('\n');
-                    }
-
-                    break;
                 }
             }
-        }
 
-        return result.ToString();
+            return result.ToString();
+        }
+        catch (Exception ex)
+        {
+            Log.Warning("Exception while consolidating repeated log lines: " + ex);
+            return log + "\n[Failed to consolidate repeated log lines]";
+        }
     }
 }
