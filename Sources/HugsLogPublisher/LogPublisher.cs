@@ -215,6 +215,7 @@ public class LogPublisher
             logSection = RedactHomeDirectoryPaths(logSection);
             logSection = RedactSteamId(logSection);
             logSection = RedactUselessLines(logSection);
+            logSection = ConsolidateRepeatedLines(logSection);
             logSection = TrimExcessLines(logSection);
             var collatedData = string.Concat(MakeLogTimestamp(),
                 ListActiveMods(), "\n",
@@ -486,5 +487,90 @@ public class LogPublisher
         }
 
         return sb.ToString();
+    }
+
+    internal static string ConsolidateRepeatedLines(string log)
+    {
+        const int searchRange = 40;
+        const int minRepetitions = 2;
+        const int minLength = 20;
+
+        var lines = log.Split('\n');
+
+        var result = new StringBuilder();
+
+        for (int i = 0; i < lines.Length; i++)
+        {
+            var line = lines[i];
+
+            result.Append(line).Append('\n');
+
+            for (int o = 1; o < searchRange && i + 2 * o <= lines.Length; o++)
+            {
+                bool match;
+
+                int r = 0;
+                int j = i;
+
+                do
+                {
+                    match = lines[j] == lines[j + o];
+
+                    if (match)
+                    {
+                        for (int k = 1; k < o; k++)
+                        {
+                            if (lines[j + k] != lines[j + o + k])
+                            {
+                                match = false;
+                                break;
+                            }
+                        }
+
+                        if (match)
+                        {
+                            j += o;
+                            r++;
+                        }
+                    }
+                }
+                while (match && j + 2 * o <= lines.Length);
+
+                if (r >= minRepetitions && (r + 1) * o >= minLength)
+                {
+                    for (int k = 1; k < o - 1; k++)
+                    {
+                        result.Append(lines[i + k]).Append('\n');
+                    }
+
+                    var n = lines[i].Length == 0 ? o - 1 : o;
+
+                    if (lines[i + o - 1].Length != 0)
+                    {
+                        result.Append(lines[i + o - 1]).Append('\n');
+                    }
+                    else
+                    {
+                        n--;
+                    }
+
+                    if (n == 1)
+                        result.Append($"########## The preceding line was repeated {r} times ##########").Append('\n');
+                    else if (n > 1)
+                        result.Append($"########## The preceding {n} lines were repeated {r} times ##########").Append('\n');
+
+                    i += o * r + (o - 1);
+
+                    if (n >= 1 && i + 1 < lines.Length && lines[i + 1].Length != 0)
+                    {
+                        result.Append('\n');
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        return result.ToString();
     }
 }
