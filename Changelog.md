@@ -1,4 +1,10 @@
 
+v2.1.3
+
+- Repeated lines in the log are now consolidated before uploading
+- Useless debug binding lines are now trimmed from the log before uploading
+- Added SA prefix to error messages in the UI to indicate the standalone publisher
+
 v2.1.2
 
 - Added log upload button to the vanilla log window
