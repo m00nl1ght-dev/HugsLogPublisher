@@ -59,7 +59,7 @@ internal class Dialog_PublishLogs : Window
 
         if (_publisher.Status == LogPublisher.PublisherStatus.Error)
         {
-            statusLabelText = string.Format(statusLabelText, _publisher.ErrorMessage);
+            statusLabelText = "[SA] " + string.Format(statusLabelText, _publisher.ErrorMessage);
         }
 
         var statusLabelRect = new Rect(inRect.x, inRect.y + titleRect.height, inRect.width, StatusLabelHeight);
