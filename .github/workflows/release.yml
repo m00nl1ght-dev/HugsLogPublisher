@@ -28,7 +28,7 @@ jobs:
         with:
           type: 'zip'
           filename: ${{ steps.read_version.outputs.mod_zip }}
-          exclusions: '/.git/* /Sources/* /AddOn/* /.github/* .git*'
+          exclusions: '/.git/* /Sources/* /AddOn/* /.github/* .git*  *.pdb'
 
       - name: Read changelog
         id: read_changelog
