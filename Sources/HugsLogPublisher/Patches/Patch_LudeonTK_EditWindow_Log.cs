@@ -33,11 +33,11 @@ internal static class Patch_LudeonTK_EditWindow_Log
         var vector2 = Text.CalcSize(text);
 
         #if RW_1_5_OR_GREATER
-            var rect = new Rect(x - vector2.x - 10f, y, vector2.x + 10f, 24f);
-            if (DevGUI.ButtonText(rect, text)) action();
+        var rect = new Rect(x - vector2.x - 10f, y, vector2.x + 10f, 24f);
+        if (DevGUI.ButtonText(rect, text)) action();
         #else
-            var rect = new Rect(x - vector2.x - 16f, y, vector2.x + 16f, vector2.y + 2f);
-            if (Widgets.ButtonText(rect, text)) action();
+        var rect = new Rect(x - vector2.x - 16f, y, vector2.x + 16f, vector2.y + 2f);
+        if (Widgets.ButtonText(rect, text)) action();
         #endif
 
         if (!tooltip.NullOrEmpty())

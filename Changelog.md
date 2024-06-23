@@ -1,4 +1,9 @@
 
+v2.1.4
+
+- Restore support for version info from Manifest.xml files
+- Add support for mod meta version from About.xml (RW 1.5 only)
+
 v2.1.3
 
 - Repeated lines in the log are now consolidated before uploading
