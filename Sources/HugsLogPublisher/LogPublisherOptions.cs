@@ -7,6 +7,7 @@ internal interface ILogPublisherOptions
     bool UseCustomOptions { get; set; }
     bool IncludePlatformInfo { get; set; }
     bool AllowUnlimitedLogSize { get; set; }
+    bool UseAlternativePlatform { get; set; }
     string AuthToken { get; set; }
 }
 
@@ -19,6 +20,8 @@ internal class LogPublisherOptions : IEquatable<LogPublisherOptions>, ILogPublis
 
     public bool AllowUnlimitedLogSize { get; set; }
 
+    public bool UseAlternativePlatform { get; set; }
+
     public string AuthToken { get; set; }
 
     public bool Equals(LogPublisherOptions other)
@@ -28,6 +31,7 @@ internal class LogPublisherOptions : IEquatable<LogPublisherOptions>, ILogPublis
         return UseCustomOptions == other.UseCustomOptions
                && IncludePlatformInfo == other.IncludePlatformInfo
                && AllowUnlimitedLogSize == other.AllowUnlimitedLogSize
+               && UseAlternativePlatform == other.UseAlternativePlatform
                && AuthToken == other.AuthToken;
     }
 }

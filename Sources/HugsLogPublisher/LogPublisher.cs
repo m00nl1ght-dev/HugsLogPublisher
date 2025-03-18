@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -28,19 +29,33 @@ public class LogPublisher
 
     private const string RequestUserAgent = "HugsLib_log_uploader";
     private const string OutputLogFilename = "output_log.txt";
+
     private const string GistApiUrl = "https://api.github.com/gists";
 
     private const string GistPayloadJson =
         "{{\"description\":\"{0}\",\"public\":{1},\"files\":{{\"{2}\":{{\"content\":\"{3}\"}}}}}}";
 
-    private const string GistDescription = "Rimworld output log published using HugsLib";
+    private const string GistDescription = "Rimworld output log published using HugsLib Standalone Log Publisher";
+
+    private const string AlternativeApiUrl = "https://api.paste.gg/v1/pastes";
+    private const string AlternativeSubPath = "rimworld-game-logs";
+
+    private const string AlternativePayloadJson =
+        "{{\"name\": \"{0}\", \"visibility\": \"unlisted\", \"expires\": \"{1}\", " +
+        "\"files\": [{{\"name\": \"{2}\", \"content\": {{\"format\": \"text\", \"value\": \"{3}\"}}}}]}}";
+
     private const int MaxLogLineCount = 10000;
     private const float PublishRequestTimeout = 90f;
 
     private readonly string _gitHubAuthToken =
         "OptFd1QFKR5OJH0l9JzW8BIzFSLff006H7Hh_phg".Reverse().Join(""); // GitHub will revoke any tokens committed
 
+    private readonly string _alternativeAuthToken =
+        "c901ee6c586731e9ad44a9345426ffb2".Reverse().Join("");
+
     private readonly Regex _uploadResponseUrlMatch = new Regex("\"html_url\":\"(https://gist\\.github\\.com/[\\w/]+)\"");
+    private readonly Regex _alternativeResponseUrlMatch = new Regex("\"id\":\"([\\w/]+)\"");
+
     private UnityWebRequest _activeRequest;
     private Thread _mockThread;
 
@@ -119,18 +134,35 @@ public class LogPublisher
         try
         {
             collatedData = CleanForJson(collatedData);
-            var useCustomAuthToken = !string.IsNullOrWhiteSpace(_publishOptions.AuthToken);
-            var authToken = useCustomAuthToken
-                ? _publishOptions.AuthToken.Trim()
-                : _gitHubAuthToken;
-            var publicVisibility = useCustomAuthToken ? "false" : "true";
-            var payload = string.Format(GistPayloadJson,
-                GistDescription, publicVisibility, OutputLogFilename, collatedData);
-            _activeRequest = new UnityWebRequest(GistApiUrl, UnityWebRequest.kHttpVerbPOST);
-            _activeRequest.SetRequestHeader("Authorization", "token " + authToken);
-            _activeRequest.SetRequestHeader("User-Agent", RequestUserAgent);
-            _activeRequest.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(payload)) { contentType = "application/json" };
-            _activeRequest.downloadHandler = new DownloadHandlerBuffer();
+
+            if (_publishOptions.UseAlternativePlatform)
+            {
+                var expiry = DateTime.UtcNow.AddDays(7).ToString("o", CultureInfo.InvariantCulture);
+                var payload = string.Format(AlternativePayloadJson,
+                    GistDescription, expiry, OutputLogFilename, collatedData);
+
+                _activeRequest = new UnityWebRequest(AlternativeApiUrl, UnityWebRequest.kHttpVerbPOST);
+                _activeRequest.SetRequestHeader("Authorization", "Key " + _alternativeAuthToken);
+                _activeRequest.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(payload)) { contentType = "application/json" };
+                _activeRequest.downloadHandler = new DownloadHandlerBuffer();
+            }
+            else
+            {
+                var useCustomAuthToken = !string.IsNullOrWhiteSpace(_publishOptions.AuthToken);
+                var authToken = useCustomAuthToken
+                    ? _publishOptions.AuthToken.Trim()
+                    : _gitHubAuthToken;
+                var publicVisibility = useCustomAuthToken ? "false" : "true";
+                var payload = string.Format(GistPayloadJson,
+                    GistDescription, publicVisibility, OutputLogFilename, collatedData);
+
+                _activeRequest = new UnityWebRequest(GistApiUrl, UnityWebRequest.kHttpVerbPOST);
+                _activeRequest.SetRequestHeader("Authorization", "token " + authToken);
+                _activeRequest.SetRequestHeader("User-Agent", RequestUserAgent);
+                _activeRequest.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(payload)) { contentType = "application/json" };
+                _activeRequest.downloadHandler = new DownloadHandlerBuffer();
+            }
+
             HugsLibUtility.AwaitUnityWebResponse(_activeRequest, OnUploadComplete, OnRequestFailed,
                 HttpStatusCode.Created, PublishRequestTimeout);
         }
@@ -143,6 +175,16 @@ public class LogPublisher
     public void CopyToClipboard()
     {
         HugsLibUtility.CopyToClipboard(PrepareLogData());
+    }
+
+    public bool ShouldSuggestAlternativePlatform =>
+        ErrorMessage != null && ErrorMessage.Contains("HTTP/1.1") && !_publishOptions.UseAlternativePlatform;
+
+    public void UseAlternativePlatformAfterError()
+    {
+        _publishOptions.UseCustomOptions = true;
+        _publishOptions.UseAlternativePlatform = true;
+        _publishOptions.AllowUnlimitedLogSize = false;
     }
 
     private void OnPublishConfirmed()
@@ -177,12 +219,6 @@ public class LogPublisher
         FinalizeUpload(true);
     }
 
-    private void OnUrlShorteningComplete(string shortUrl)
-    {
-        ResultUrl = _activeRequest.GetResponseHeader("Location");
-        FinalizeUpload(true);
-    }
-
     private void FinalizeUpload(bool success)
     {
         Status = success ? PublisherStatus.Done : PublisherStatus.Error;
@@ -192,9 +228,18 @@ public class LogPublisher
 
     private string TryExtractGistUrlFromUploadResponse(string response)
     {
-        var match = _uploadResponseUrlMatch.Match(response);
-        if (!match.Success) return null;
-        return match.Groups[1].ToString();
+        if (_publishOptions.UseAlternativePlatform)
+        {
+            var match = _alternativeResponseUrlMatch.Match(response);
+            if (!match.Success) return null;
+            return $"https://paste.gg/p/{AlternativeSubPath}/{match.Groups[1]}";
+        }
+        else
+        {
+            var match = _uploadResponseUrlMatch.Match(response);
+            if (!match.Success) return null;
+            return match.Groups[1].ToString();
+        }
     }
 
     private bool PublisherIsReady()
@@ -239,7 +284,7 @@ public class LogPublisher
 
     private string TrimExcessLines(string log)
     {
-        if (_publishOptions.AllowUnlimitedLogSize) return log;
+        if (_publishOptions.AllowUnlimitedLogSize && !_publishOptions.UseAlternativePlatform) return log;
         var indexOfLastNewline = IndexOfOccurence(log, '\n', MaxLogLineCount);
         if (indexOfLastNewline >= 0)
         {

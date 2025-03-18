@@ -59,7 +59,14 @@ internal class Dialog_PublishLogs : Window
 
         if (_publisher.Status == LogPublisher.PublisherStatus.Error)
         {
-            statusLabelText = "[SA] " + string.Format(statusLabelText, _publisher.ErrorMessage);
+            if (_publisher.ShouldSuggestAlternativePlatform)
+            {
+                statusLabelText = "HugsLogPublisher.errorTryAlternativePlatformHint".Translate();
+            }
+            else
+            {
+                statusLabelText = "[SA] " + string.Format(statusLabelText, _publisher.ErrorMessage);
+            }
         }
 
         var statusLabelRect = new Rect(inRect.x, inRect.y + titleRect.height, inRect.width, StatusLabelHeight);
@@ -90,13 +97,24 @@ internal class Dialog_PublishLogs : Window
             }
         }
 
-        var bottomLeftBtnRect = new Rect(inRect.x, inRect.height - _controlButtonSize.y, _controlButtonSize.x,
-            _controlButtonSize.y);
+        var bottomLeftBtnRect = new Rect(inRect.x, inRect.height - _controlButtonSize.y, _controlButtonSize.x, _controlButtonSize.y);
+
         if (_publisher.Status == LogPublisher.PublisherStatus.Error)
         {
-            if (Widgets.ButtonText(bottomLeftBtnRect, "HugsLogPublisher.retryBtn".Translate()))
+            if (_publisher.ShouldSuggestAlternativePlatform)
             {
-                _publisher.BeginUpload();
+                if (Widgets.ButtonText(bottomLeftBtnRect, "HugsLogPublisher.retryBtn".Translate()))
+                {
+                    _publisher.UseAlternativePlatformAfterError();
+                    _publisher.BeginUpload();
+                }
+            }
+            else
+            {
+                if (Widgets.ButtonText(bottomLeftBtnRect, "HugsLogPublisher.retryBtn".Translate()))
+                {
+                    _publisher.BeginUpload();
+                }
             }
         }
         else if (_publisher.Status == LogPublisher.PublisherStatus.Done)

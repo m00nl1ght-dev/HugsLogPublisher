@@ -76,10 +76,16 @@ internal class Dialog_PublishLogsOptions : Window
             const float indent = gapSize * 2f;
             _options.IncludePlatformInfo = AddOptionCheckbox(l, "HugsLogPublisher.platformInfo",
                 "HugsLogPublisher.platformInfo_tip", _options.IncludePlatformInfo, out _, indent);
-            _options.AllowUnlimitedLogSize = AddOptionCheckbox(l, "HugsLogPublisher.unlimitedLogSize",
-                "HugsLogPublisher.unlimitedLogSize_tip", _options.AllowUnlimitedLogSize, out _, indent);
-            _options.AuthToken = AddOptionTextField(l, "HugsLogPublisher.githubToken",
-                "HugsLogPublisher.githubToken_tip", _options.AuthToken, indent);
+            _options.UseAlternativePlatform = AddOptionCheckbox(l, "HugsLogPublisher.alternativePlatform",
+                "HugsLogPublisher.alternativePlatform_tip", _options.UseAlternativePlatform, out _, indent);
+
+            if (!_options.UseAlternativePlatform)
+            {
+                _options.AllowUnlimitedLogSize = AddOptionCheckbox(l, "HugsLogPublisher.unlimitedLogSize",
+                    "HugsLogPublisher.unlimitedLogSize_tip", _options.AllowUnlimitedLogSize, out _, indent);
+                _options.AuthToken = AddOptionTextField(l, "HugsLogPublisher.githubToken",
+                    "HugsLogPublisher.githubToken_tip", _options.AuthToken, indent);
+            }
         }
 
         l.End();
