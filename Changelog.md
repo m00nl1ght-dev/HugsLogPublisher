@@ -1,4 +1,8 @@
 
+v2.1.5
+
+- Added support for alternative sharing platform (paste.gg)
+
 v2.1.4
 
 - Restore support for version info from Manifest.xml files

@@ -9,7 +9,7 @@
         <RootNamespace>HugsLogPublisher</RootNamespace>
         <AssemblyName>HugsLogPublisher</AssemblyName>
 
-        <Version>2.1.4</Version>
+        <Version>2.1.5</Version>
     </PropertyGroup>
 
     <ItemGroup>
