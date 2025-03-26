@@ -48,7 +48,7 @@ public class LogPublisher
     private const float PublishRequestTimeout = 90f;
 
     private readonly string _gitHubAuthToken =
-        "OptFd1QFKR5OJH0l9JzW8BIzFSLff006H7Hh_phg".Reverse().Join(""); // GitHub will revoke any tokens committed
+        "RuEvo2u9gsaCeKA9Bamh4sa57FOikUYkHhLH_phg".Reverse().Join(""); // GitHub will revoke any tokens committed
 
     private readonly string _alternativeAuthToken =
         "c901ee6c586731e9ad44a9345426ffb2".Reverse().Join("");
