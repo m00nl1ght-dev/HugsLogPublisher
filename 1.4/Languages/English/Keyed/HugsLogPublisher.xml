@@ -21,6 +21,9 @@
   <HugsLogPublisher.platformInfo_tip>Includes information about your CPU, memory and video card in the log.</HugsLogPublisher.platformInfo_tip>
   <HugsLogPublisher.unlimitedLogSize>Allow unlimited log size</HugsLogPublisher.unlimitedLogSize>
   <HugsLogPublisher.unlimitedLogSize_tip>When disabled, log size is limited to 10K lines to prevent very long logs from causing issues.</HugsLogPublisher.unlimitedLogSize_tip>
+  <HugsLogPublisher.alternativePlatform>Use alternative sharing service</HugsLogPublisher.alternativePlatform>
+  <HugsLogPublisher.alternativePlatform_tip>Use an alternative online platform (paste.gg) as the upload destination. Useful if GitHub is not working.</HugsLogPublisher.alternativePlatform_tip>
+  <HugsLogPublisher.errorTryAlternativePlatformHint>Upload failed. Looks like sharing via GitHub is currently unavailable. You can try again using an alternative sharing service (paste.gg) by clicking "Retry" below.</HugsLogPublisher.errorTryAlternativePlatformHint>
   <HugsLogPublisher.githubToken>GitHub access token</HugsLogPublisher.githubToken>
   <HugsLogPublisher.githubToken_tip>Publishes logs to your own GitHub account when set. Paste a token from GitHub > Settings > Developer Settings > Personal access tokens. Leave blank to publish to the public HugsLib account.\n\nLogs published to your account can only be viewed by others using a link.</HugsLogPublisher.githubToken_tip>
   <HugsLogPublisher.toClipboardBtn>To clipboard</HugsLogPublisher.toClipboardBtn>

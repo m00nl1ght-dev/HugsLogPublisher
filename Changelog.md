@@ -1,4 +1,8 @@
 
+v2.1.6
+
+- Updated gists token from upstream
+
 v2.1.5
 
 - Added support for alternative sharing platform (paste.gg)
