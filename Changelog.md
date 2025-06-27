@@ -1,4 +1,8 @@
 
+v2.1.7
+
+- Support for RimWorld 1.6
+
 v2.1.6
 
 - Updated gists token from upstream
