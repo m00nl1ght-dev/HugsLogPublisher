@@ -76,6 +76,8 @@ internal class Dialog_PublishLogsOptions : Window
             const float indent = gapSize * 2f;
             _options.IncludePlatformInfo = AddOptionCheckbox(l, "HugsLogPublisher.platformInfo",
                 "HugsLogPublisher.platformInfo_tip", _options.IncludePlatformInfo, out _, indent);
+            _options.UsePreviousLog = AddOptionCheckbox(l, "HugsLogPublisher.usePreviousLog",
+                "HugsLogPublisher.usePreviousLog_tip", _options.UsePreviousLog, out _, indent);
             _options.UseAlternativePlatform = AddOptionCheckbox(l, "HugsLogPublisher.alternativePlatform",
                 "HugsLogPublisher.alternativePlatform_tip", _options.UseAlternativePlatform, out _, indent);
 

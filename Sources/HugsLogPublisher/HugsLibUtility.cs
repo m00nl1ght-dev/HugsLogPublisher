@@ -69,9 +69,11 @@ internal static class HugsLibUtility
     /// Attempts to return the path of the log file Unity is writing to.
     /// </summary>
     /// <returns></returns>
-    public static string TryGetLogFilePath()
+    public static string TryGetLogFilePath(bool previous)
     {
         string filePath;
+
+        var fileName = previous ? "Player-prev.log" : "Player.log";
 
         if (TryGetCommandLineOptionValue("logfile") is { Length: > 0 } cmdLog)
         {
@@ -79,7 +81,7 @@ internal static class HugsLibUtility
         }
         else
         {
-            filePath = Path.Combine(Application.persistentDataPath, "Player.log");
+            filePath = Path.Combine(Application.persistentDataPath, fileName);
         }
 
         if (File.Exists(filePath))
@@ -89,9 +91,9 @@ internal static class HugsLibUtility
 
         return GetCurrentPlatform() switch
         {
-            PlatformType.Linux => "/tmp/rimworld_log",
+            PlatformType.Linux => previous ? null : "/tmp/rimworld_log",
             PlatformType.MacOSX => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal),
-                $"Library/Logs/{Application.companyName}/{Application.productName}/Player.log"),
+                $"Library/Logs/{Application.companyName}/{Application.productName}/{fileName}"),
             _ => null
         };
     }

@@ -377,7 +377,7 @@ public class LogPublisher
 
     private string GetLogFileContents()
     {
-        var filePath = HugsLibUtility.TryGetLogFilePath();
+        var filePath = HugsLibUtility.TryGetLogFilePath(_publishOptions.UsePreviousLog);
         if (filePath.NullOrEmpty() || !File.Exists(filePath))
         {
             throw new FileNotFoundException($"Log file not found: {filePath}");
@@ -389,7 +389,7 @@ public class LogPublisher
         File.Copy(filePath, tempPath);
         var fileContents = File.ReadAllText(tempPath);
         File.Delete(tempPath);
-        return "Log file contents:\n" + fileContents;
+        return (_publishOptions.UsePreviousLog ? "Log file contents from previous game launch:\n" : "Log file contents:\n") + fileContents;
     }
 
     private string MakeLogTimestamp()
