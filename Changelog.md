@@ -1,4 +1,9 @@
 
+v2.1.8
+
+- Added option to share the previous log file (useful after crash to desktop)
+- Fixed log file path not found in some Linux environments
+
 v2.1.7
 
 - Support for RimWorld 1.6
