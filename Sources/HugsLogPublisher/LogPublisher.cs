@@ -380,7 +380,7 @@ public class LogPublisher
         var filePath = HugsLibUtility.TryGetLogFilePath();
         if (filePath.NullOrEmpty() || !File.Exists(filePath))
         {
-            throw new FileNotFoundException("Log file not found:" + filePath);
+            throw new FileNotFoundException($"Log file not found: {filePath}");
         }
 
         var tempPath = Path.GetTempFileName();

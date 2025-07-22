@@ -71,18 +71,27 @@ internal static class HugsLibUtility
     /// <returns></returns>
     public static string TryGetLogFilePath()
     {
-        if (TryGetCommandLineOptionValue("logfile") is { } cmdLog)
+        string filePath;
+
+        if (TryGetCommandLineOptionValue("logfile") is { Length: > 0 } cmdLog)
         {
-            return cmdLog;
+            filePath = cmdLog;
+        }
+        else
+        {
+            filePath = Path.Combine(Application.persistentDataPath, "Player.log");
         }
 
-        var platform = GetCurrentPlatform();
-        return platform switch
+        if (File.Exists(filePath))
+            return filePath;
+
+        Log.Warning($"Log file not found at: {filePath}");
+
+        return GetCurrentPlatform() switch
         {
-            PlatformType.Linux => @"/tmp/rimworld_log",
+            PlatformType.Linux => "/tmp/rimworld_log",
             PlatformType.MacOSX => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal),
                 $"Library/Logs/{Application.companyName}/{Application.productName}/Player.log"),
-            PlatformType.Windows => Path.Combine(Application.persistentDataPath, "Player.log"),
             _ => null
         };
     }
