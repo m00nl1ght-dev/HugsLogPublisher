@@ -75,6 +75,12 @@ internal static class HugsLibUtility
 
         var fileName = previous ? "Player-prev.log" : "Player.log";
 
+        // From 1.7 the game ignores -logfile and always writes into a Logs folder, which consoleLogPath points to
+        if (VersionControl.CurrentVersion >= new Version(1, 7))
+        {
+            return Path.Combine(Path.GetDirectoryName(Application.consoleLogPath), fileName);
+        }
+
         if (TryGetCommandLineOptionValue("logfile") is { Length: > 0 } cmdLog)
         {
             filePath = cmdLog;
