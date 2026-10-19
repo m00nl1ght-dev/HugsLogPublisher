@@ -1,4 +1,10 @@
 
+v2.2.0
+
+- Added support for RimWorld 1.7
+- Adapted platform information redaction to new log format
+- Added experimental option that compacts log message stacktraces
+
 v2.1.8
 
 - Added option to share the previous log file (useful after crash to desktop)
