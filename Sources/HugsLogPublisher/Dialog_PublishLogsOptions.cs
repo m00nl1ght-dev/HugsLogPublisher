@@ -81,6 +81,13 @@ internal class Dialog_PublishLogsOptions : Window
             _options.UseAlternativePlatform = AddOptionCheckbox(l, "HugsLogPublisher.alternativePlatform",
                 "HugsLogPublisher.alternativePlatform_tip", _options.UseAlternativePlatform, out _, indent);
 
+            #if RW_1_7_OR_GREATER
+
+            _options.CompactLogMessageStacktraces = AddOptionCheckbox(l, "HugsLogPublisher.compactLogMessageStacktraces",
+                "HugsLogPublisher.compactLogMessageStacktraces_tip", _options.CompactLogMessageStacktraces, out _, indent);
+
+            #endif
+
             if (!_options.UseAlternativePlatform)
             {
                 _options.AllowUnlimitedLogSize = AddOptionCheckbox(l, "HugsLogPublisher.unlimitedLogSize",
@@ -155,7 +162,11 @@ internal class Dialog_PublishLogsOptions : Window
 
     private void UpdateWindowSize()
     {
-        const int numHiddenOptions = 4;
+        #if RW_1_7_OR_GREATER
+        const int numHiddenOptions = 6;
+        #else
+        const int numHiddenOptions = 5;
+        #endif
         float extraWindowHeight =
             _options.UseCustomOptions ? (Text.LineHeight + ToggleVerticalSpacing) * numHiddenOptions : 0;
         windowRect = new Rect(windowRect.x, windowRect.y, InitialSize.x, InitialSize.y + extraWindowHeight);

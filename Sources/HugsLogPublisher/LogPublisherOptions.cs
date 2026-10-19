@@ -8,6 +8,9 @@ internal interface ILogPublisherOptions
     bool IncludePlatformInfo { get; set; }
     bool AllowUnlimitedLogSize { get; set; }
     bool UseAlternativePlatform { get; set; }
+    #if RW_1_7_OR_GREATER
+    bool CompactLogMessageStacktraces { get; set; }
+    #endif
     bool UsePreviousLog { get; set; }
     string AuthToken { get; set; }
 }
@@ -20,6 +23,10 @@ internal class LogPublisherOptions : IEquatable<LogPublisherOptions>, ILogPublis
     public bool IncludePlatformInfo { get; set; }
 
     public bool AllowUnlimitedLogSize { get; set; }
+
+    #if RW_1_7_OR_GREATER
+    public bool CompactLogMessageStacktraces { get; set; }
+    #endif
 
     public bool UseAlternativePlatform { get; set; }
 
@@ -34,6 +41,9 @@ internal class LogPublisherOptions : IEquatable<LogPublisherOptions>, ILogPublis
         return UseCustomOptions == other.UseCustomOptions
                && IncludePlatformInfo == other.IncludePlatformInfo
                && AllowUnlimitedLogSize == other.AllowUnlimitedLogSize
+               #if RW_1_7_OR_GREATER
+               && CompactLogMessageStacktraces == other.CompactLogMessageStacktraces
+               #endif
                && UseAlternativePlatform == other.UseAlternativePlatform
                && UsePreviousLog == other.UsePreviousLog
                && AuthToken == other.AuthToken;

@@ -75,6 +75,13 @@ internal static class HugsLibUtility
 
         var fileName = previous ? "Player-prev.log" : "Player.log";
 
+        #if RW_1_7_OR_GREATER
+
+        var logDir = Path.GetDirectoryName(Application.consoleLogPath);
+        filePath = Path.Combine(logDir ?? ".", fileName);
+
+        #else
+
         if (TryGetCommandLineOptionValue("logfile") is { Length: > 0 } cmdLog)
         {
             filePath = cmdLog;
@@ -83,6 +90,8 @@ internal static class HugsLibUtility
         {
             filePath = Path.Combine(Application.persistentDataPath, fileName);
         }
+
+        #endif
 
         if (File.Exists(filePath))
             return filePath;

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -256,16 +257,22 @@ public class LogPublisher
             // redact logs for privacy
             logSection = RedactRimworldPaths(logSection);
             logSection = RedactPlayerConnectInformation(logSection);
-            logSection = RedactRendererInformation(logSection);
+            logSection = RedactPlatformInformation(logSection);
             logSection = RedactHomeDirectoryPaths(logSection);
             logSection = RedactSteamId(logSection);
             logSection = RedactUselessLines(logSection);
+            #if RW_1_7_OR_GREATER
+            logSection = CompactLogMessageStacktraces(logSection);
+            #endif
             logSection = ConsolidateRepeatedLines(logSection);
             logSection = TrimExcessLines(logSection);
             var collatedData = string.Concat(MakeLogTimestamp(),
                 ListActiveMods(), "\n",
                 ListHarmonyPatches(), "\n",
+                // in 1.7 the log itself contains the platform info
+                #if !RW_1_7_OR_GREATER
                 ListPlatformInfo(), "\n",
+                #endif
                 logSection);
             return collatedData;
         }
@@ -356,16 +363,22 @@ public class LogPublisher
         return log;
     }
 
-    private string RedactRendererInformation(string log)
+    private string RedactPlatformInformation(string log)
     {
         if (_publishOptions.IncludePlatformInfo) return log;
-        // apparently renderer information can appear multiple times in the log
-        for (int i = 0; i < 5; i++)
-        {
-            var redacted = RedactString(log, "GfxDevice: ", "\nBegin MonoManager", "[Renderer information redacted]");
-            if (log.Length == redacted.Length) break;
-            log = redacted;
-        }
+
+        #if RW_1_7_OR_GREATER
+
+        log = RedactString(log, "OS:        ", "\n", "[Platform information redacted]");
+        log = RedactString(log, "Process:   ", "\n", "[Platform information redacted]");
+
+        log = RedactString(log, "INFO [GraphicsDevice] ", "\n", "[Platform information redacted]");
+
+        #else
+
+        log = RedactString(log, "GfxDevice: ", "\nBegin MonoManager", "[Renderer information redacted]");
+
+        #endif
 
         return log;
     }
@@ -400,15 +413,19 @@ public class LogPublisher
 
     private string RedactString(string original, string redactStart, string redactEnd, string replacement)
     {
-        var startIndex = original.IndexOf(redactStart, StringComparison.Ordinal);
-        var endIndex = original.IndexOf(redactEnd, StringComparison.Ordinal);
-        string result = original;
-        if (startIndex >= 0 && endIndex >= 0)
+        var searchFromIndex = 0;
+        var result = original;
+
+        for (int i = 0; i < 20; i++)
         {
-            var logTail = original.Substring(endIndex);
-            result = original.Substring(0, startIndex + redactStart.Length);
-            result += replacement;
-            result += logTail;
+            var startIndex = result.IndexOf(redactStart, searchFromIndex, StringComparison.Ordinal);
+            if (startIndex < 0) return result;
+
+            var endIndex = result.IndexOf(redactEnd, startIndex + redactStart.Length, StringComparison.Ordinal);
+            if (endIndex < 0) return result;
+
+            result = result.Substring(0, startIndex + redactStart.Length) + replacement + result.Substring(endIndex);
+            searchFromIndex = startIndex + redactStart.Length + replacement.Length + redactEnd.Length;
         }
 
         return result;
@@ -423,6 +440,8 @@ public class LogPublisher
             patchListing.EndsWith("\n") ? "" : "\n",
             HarmonyUtility.DescribeHarmonyVersions(), "\n");
     }
+
+    #if !RW_1_7_OR_GREATER
 
     private string ListPlatformInfo()
     {
@@ -441,6 +460,8 @@ public class LogPublisher
 
         return sectionTitle + "(hidden, use publishing options to include)\n";
     }
+
+    #endif
 
     private string ListActiveMods()
     {
@@ -568,6 +589,57 @@ public class LogPublisher
 
         return sb.ToString();
     }
+
+    #if RW_1_7_OR_GREATER
+
+    public static readonly List<string> LogStackIgnore = [
+        "Brutal.Logging",
+        "Verse.Log",
+        "LunarFramework.Logging"
+    ];
+
+    internal string CompactLogMessageStacktraces(string log)
+    {
+        if (!_publishOptions.CompactLogMessageStacktraces) return log;
+
+        try
+        {
+            var lines = log.Split('\n');
+
+            var result = new StringBuilder();
+
+            var targetLineFound = false;
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                var line = lines[i];
+
+                if (line.StartsWith("    at "))
+                {
+                    var stackStr = line[7..];
+
+                    if (targetLineFound || LogStackIgnore.Any(stackStr.StartsWith)) continue;
+
+                    targetLineFound = true;
+                    result.Append("    logged at ").Append(stackStr).Append('\n');
+                }
+                else
+                {
+                    targetLineFound = false;
+                    result.Append(line).Append('\n');
+                }
+            }
+
+            return result.ToString();
+        }
+        catch (Exception ex)
+        {
+            Log.Warning("Exception while compacting log message stacktraces: " + ex);
+            return log;
+        }
+    }
+
+    #endif
 
     internal static string ConsolidateRepeatedLines(string log)
     {
