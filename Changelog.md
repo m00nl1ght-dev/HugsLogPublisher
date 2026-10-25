@@ -1,4 +1,8 @@
 
+v2.2.1
+
+- Fixed OnGUI hook breaking some custom UI components of other mods in 1.7
+
 v2.2.0
 
 - Added support for RimWorld 1.7
