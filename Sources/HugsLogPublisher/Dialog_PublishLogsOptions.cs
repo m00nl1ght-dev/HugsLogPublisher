@@ -29,7 +29,11 @@ internal class Dialog_PublishLogsOptions : Window
     public Action OnOptionsToggled { get; set; }
     public Action OnPostClose { get; set; }
 
+    #if RW_1_7_OR_GREATER
+    public override Vector2 InitialSize => new(550f, 340f);
+    #else
     public override Vector2 InitialSize => new(550f, 320f);
+    #endif
 
     public override void PostOpen()
     {

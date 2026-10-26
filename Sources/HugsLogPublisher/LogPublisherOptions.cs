@@ -20,7 +20,11 @@ internal class LogPublisherOptions : IEquatable<LogPublisherOptions>, ILogPublis
 {
     public bool UseCustomOptions { get; set; }
 
+    #if RW_1_7_OR_GREATER
+    public bool IncludePlatformInfo { get; set; } = true;
+    #else
     public bool IncludePlatformInfo { get; set; }
+    #endif
 
     public bool AllowUnlimitedLogSize { get; set; }
 
