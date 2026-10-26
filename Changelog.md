@@ -1,4 +1,9 @@
 
+v2.2.2
+
+Platform information is now included by default, because it's critical for the
+developers and troubleshooters to know this information when debugging various issues.
+
 v2.2.1
 
 - Fixed OnGUI hook breaking some custom UI components of other mods in 1.7
