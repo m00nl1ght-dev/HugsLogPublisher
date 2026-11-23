@@ -258,6 +258,7 @@ public class LogPublisher
             logSection = RedactRimworldPaths(logSection);
             logSection = RedactPlayerConnectInformation(logSection);
             logSection = RedactPlatformInformation(logSection);
+            logSection = RedactDeviceIds(logSection);
             logSection = RedactHomeDirectoryPaths(logSection);
             logSection = RedactSteamId(logSection);
             logSection = RedactUselessLines(logSection);
@@ -381,6 +382,21 @@ public class LogPublisher
         #endif
 
         return log;
+    }
+
+    private static readonly Regex DeviceIdPattern = new("uuid ([0-9A-Fa-f]{32})\\b");
+
+    // the Vulkan device uuid is unique per card on some vendors, so it would link every log shared from one machine;
+    // each id gets a number that is stable within the log, so the card list and GPU warnings can still be matched
+    internal static string RedactDeviceIds(string log)
+    {
+        var numbers = new Dictionary<string, int>();
+        return DeviceIdPattern.Replace(log, match =>
+        {
+            var id = match.Groups[1].Value.ToUpperInvariant();
+            if (!numbers.TryGetValue(id, out var number)) numbers[id] = number = numbers.Count + 1;
+            return $"uuid [Device id {number} redacted]";
+        });
     }
 
     private string RedactPlayerConnectInformation(string log)
